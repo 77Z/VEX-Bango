@@ -7,6 +7,9 @@
 #include "pros/misc.hpp"
 #include "pros/motors.hpp"
 #include "pros/rtos.hpp"
+
+#include "features.hpp"
+
 #include <memory>
 
 /**
@@ -19,7 +22,7 @@ void on_center_button() {
 	static bool pressed = false;
 	pressed = !pressed;
 	if (pressed) {
-		pros::lcd::set_text(2, "I was pressed!");
+		pros::lcd::set_text(2, "funky monks are on the run");
 	} else {
 		pros::lcd::clear_line(2);
 	}
@@ -33,7 +36,7 @@ void on_center_button() {
  */
 void initialize() {
 	pros::lcd::initialize();
-	pros::lcd::set_text(1, "Hello PROS User!");
+	pros::lcd::set_text(1, "Matt sucks");
 
 	pros::lcd::register_btn1_cb(on_center_button);
 }
@@ -69,32 +72,56 @@ void competition_initialize() {}
  */
 void autonomous() {
 
-	Motor turnermotor(5);
+	// LEFT SIDE
+	
+	pros::Motor top_left_wheel(13);
+	pros::Motor top_right_wheel(20, true);
+	pros::Motor bottom_left_wheel(19);
+	pros::Motor bottom_right_wheel(12, true);
 
-	std::shared_ptr<ChassisController> drive = ChassisControllerBuilder()
-			.withMotors(
-					-12,
-					11,
-					14,
-					-13
-				   )
-			.withDimensions(AbstractMotor::gearset::green, {{4_in, 14.5_in}, imev5GreenTPR})
-			.build();
-	auto xModel = std::dynamic_pointer_cast<XDriveModel>(drive->getModel());
+	pros::Motor spindle(11);
+	
+	top_left_wheel.move(255);
+	bottom_left_wheel.move(255);
 
-	drive->moveDistance(24_in);
-	pros::delay(700);
-	drive->turnAngle(90_deg);
+	top_right_wheel.move(255);
+	bottom_right_wheel.move(255);
 
-	/*xModel->strafe(200);
-	pros::delay(500);
-	xModel->stop();
-	pros::delay(700);
-	turnermotor.moveVelocity(200);*/
+	spindle.move_velocity(-255);
 
-	pros::delay(500);
-	turnermotor.moveVelocity(0);
+	pros::delay(300);
 
+
+
+	top_left_wheel.move(0);
+	bottom_left_wheel.move(0);
+
+	top_right_wheel.move(0);
+	bottom_right_wheel.move(0);
+
+	//pros::delay(200);
+
+	spindle.move_velocity(0);
+	
+
+	//! RIGHT SIDE
+	
+/*
+
+	pros::Motor flywheel(14);
+	pros::Motor conveyor(15);
+
+	flywheel.move_velocity(-255);
+
+	pros::delay(5000);
+
+	conveyor.move_velocity(100);
+
+	pros::delay(2000);
+
+	conveyor.move_velocity(0);
+	flywheel.move_velocity(0);
+	*/
 }
 
 /**
@@ -111,22 +138,37 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 void opcontrol() {
+
+	pros::Motor top_left_wheel(13);
+	pros::Motor top_right_wheel(20, true);
+	pros::Motor bottom_left_wheel(19);
+	pros::Motor bottom_right_wheel(12, true);
+
+	pros::Motor spindle(11);
+	pros::Motor intake(10);
+	pros::Motor flywheel(14);
+	pros::Motor conveyor(15);
+
+	pros::Controller master(CONTROLLER_MASTER);
+	
+
+
 	//pros::Controller master(pros::E_CONTROLLER_MASTER);
 
 	//pros::Motor spindlething(10);
 
-	Controller controller;
-	ControllerButton spindleupbutton(ControllerDigital::R1);
-	ControllerButton spindledownbutton(ControllerDigital::R2);
+	//Controller controller;
+	//ControllerButton spindleupbutton(ControllerDigital::R1);
+	//ControllerButton spindledownbutton(ControllerDigital::R2);
 
-	ControllerButton turnerfwdbutton(ControllerDigital::L2);
-	ControllerButton turnerbwbutton(ControllerDigital::L1);
+	//ControllerButton turnerfwdbutton(ControllerDigital::L2);
+	//ControllerButton turnerbwbutton(ControllerDigital::L1);
 
-	Motor spindlemotor(10);
+	//Motor spindlemotor(10);
 
-	Motor turnermotor(5);
+	//Motor turnermotor(5);
 
-	std::shared_ptr<ChassisController> drive = ChassisControllerBuilder()
+	/*std::shared_ptr<ChassisController> drive = ChassisControllerBuilder()
 			.withMotors(
 					-12,
 					11,
@@ -136,8 +178,16 @@ void opcontrol() {
 			.withDimensions(AbstractMotor::gearset::green, {{4_in, 14.5_in}, imev5GreenTPR})
 			.build();
 	auto xModel = std::dynamic_pointer_cast<XDriveModel>(drive->getModel());
-
+*/
 	while (true) {
+
+		top_left_wheel.move(master.get_analog(ANALOG_LEFT_Y));
+		bottom_left_wheel.move(master.get_analog(ANALOG_LEFT_Y));
+
+		top_right_wheel.move(master.get_analog(ANALOG_RIGHT_Y));
+		bottom_right_wheel.move(master.get_analog(ANALOG_RIGHT_Y));
+
+
 		/*pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
 		                 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
 		                 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);*/
@@ -148,7 +198,7 @@ void opcontrol() {
 		//drive->getModel()->arcade(controller.getAnalog(ControllerAnalog::leftY),
 		//		controller.getAnalog(ControllerAnalog::leftX));
 
-		xModel->fieldOrientedXArcade(controller.getAnalog(ControllerAnalog::leftX), controller.getAnalog(ControllerAnalog::leftY), controller.getAnalog(ControllerAnalog::rightX), okapi::QAngle(0, 0, 0, 0));
+		//xModel->fieldOrientedXArcade(controller.getAnalog(ControllerAnalog::leftX), controller.getAnalog(ControllerAnalog::leftY), controller.getAnalog(ControllerAnalog::rightX), 0_deg);
 
 		//xModel->strafe(100);
 
@@ -162,7 +212,7 @@ void opcontrol() {
 		if (master.get_digital(DIGITAL_R1))
 			spindlething.move_velocity(-120);*/
 
-		if (spindleupbutton.changedToPressed()) {
+		/*if (spindleupbutton.changedToPressed()) {
 			spindlemotor.moveVelocity(200);
 		} else if (spindleupbutton.changedToReleased()) {
 			spindlemotor.moveVelocity(0);
@@ -185,9 +235,46 @@ void opcontrol() {
 			turnermotor.moveVelocity(-100);
 		} else if (turnerbwbutton.changedToReleased()) {
 			turnermotor.moveVelocity(0);
+		}*/
+
+		if (master.get_digital(DIGITAL_R1)) {
+			spindle.move_velocity(255);
+		}
+		else if (master.get_digital(DIGITAL_R2)) {
+			spindle.move_velocity(-255);
+		}
+		else {
+			spindle.move_velocity(0);
 		}
 
-		pros::delay(10);
+		if (master.get_digital(DIGITAL_L1)) {
+			intake.move_velocity(255);
+		}
+		else if (master.get_digital(DIGITAL_L2)) {
+			intake.move_velocity(-255);
+		}
+		else {
+			intake.move_velocity(0);
+		}
+
+		if (master.get_digital(DIGITAL_B)) {
+			flywheel.move_velocity(-255);
+		} else {
+			flywheel.move_velocity(0);
+		}
+
+
+		if (master.get_digital(DIGITAL_UP)) {
+			conveyor.move_velocity(100);
+		} else if (master.get_digital(DIGITAL_DOWN)) {
+			conveyor.move_velocity(-100);
+		} else {
+			conveyor.move_velocity(0);
+		}
+
+
+		//pros::delay(10);
+		pros::delay(2);
 	}
 
 }
